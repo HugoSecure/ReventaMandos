@@ -184,6 +184,9 @@ def init_vinted_session(session: requests.Session) -> bool:
     except requests.RequestException as e:
         logger.error("Error al inicializar sesión: %s", e)
         return False
+    except Exception as e:
+        logger.error("Error inesperado al inicializar sesión: %s", e)
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -363,7 +366,7 @@ def run_once() -> None:
     # Crear sesión con Vinted
     session = create_session()
     if not init_vinted_session(session):
-        logger.error("No se pudo inicializar sesión con Vinted")
+        logger.warning("No se pudo inicializar sesión con Vinted. Se reintentará en el próximo escaneo.")
         return
 
     new_items = 0
@@ -372,7 +375,11 @@ def run_once() -> None:
         query = config["search"]
         logger.info("🔍 Buscando: '%s'", query)
 
-        items = search_vinted(session, query)
+        try:
+            items = search_vinted(session, query)
+        except Exception as e:
+            logger.error("Error inesperado buscando '%s': %s", query, e)
+            items = []
 
         for item in items:
             item_id = str(item.get("id", ""))
