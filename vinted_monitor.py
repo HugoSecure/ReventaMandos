@@ -365,9 +365,10 @@ def run_once() -> None:
 
     # Crear sesión con Vinted
     session = create_session()
-    if not init_vinted_session(session):
+    session_ok = init_vinted_session(session)
+    if not session_ok:
         logger.warning("No se pudo inicializar sesión con Vinted. Se reintentará en el próximo escaneo.")
-        return
+        return  # Salir limpiamente, exit code 0
 
     new_items = 0
 
@@ -382,16 +383,19 @@ def run_once() -> None:
             items = []
 
         for item in items:
-            item_id = str(item.get("id", ""))
-            if item_id in seen_ids:
-                continue
+            try:
+                item_id = str(item.get("id", ""))
+                if item_id in seen_ids:
+                    continue
 
-            if is_valid_item(item, seen_ids):
-                logger.info("🎯 Chollo: %s — %s€", item.get("title"), item.get("price"))
-                if send_telegram_alert(item):
-                    new_items += 1
+                if is_valid_item(item, seen_ids):
+                    logger.info("🎯 Chollo: %s — %s€", item.get("title"), item.get("price"))
+                    if send_telegram_alert(item):
+                        new_items += 1
 
-            seen_ids.add(item_id)
+                seen_ids.add(item_id)
+            except Exception as e:
+                logger.error("Error procesando item: %s", e)
 
         # Pausa entre búsquedas
         time.sleep(random.uniform(2, 5))
