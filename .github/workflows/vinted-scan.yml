@@ -34,11 +34,25 @@ jobs:
           restore-keys: |
             vinted-seen-
 
+      - name: Test secrets
+        run: |
+          python -c "
+          import os
+          token = os.getenv('TELEGRAM_BOT_TOKEN', '')
+          chat = os.getenv('TELEGRAM_CHAT_ID', '')
+          print(f'TOKEN长度: {len(token)}')
+          print(f'CHAT_ID长度: {len(chat)}')
+          print(f'TOKEN前8字符: {token[:8]}...' if len(token) > 8 else f'TOKEN: [{token}]')
+          print(f'CHAT_ID: [{chat}]')
+          if not token or not chat:
+              print('ERROR: Secrets no configurados!')
+              exit(1)
+          print('Secrets OK')
+          "
+
       - name: Scan Vinted
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MAX_PRICE: '23.00'
-        run: |
-          python vinted_monitor.py 2>&1
-          echo "Python exit code: $?"
+        run: python vinted_monitor.py
