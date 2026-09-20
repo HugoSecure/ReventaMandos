@@ -1,0 +1,26 @@
+# render.yaml — Configuración para desplegar en Render (gratis)
+# Docs: https://render.com/docs/render.yaml
+
+services:
+  - type: worker  # Worker = proceso en segundo plano (sin HTTP externo)
+    name: vinted-mandos-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python vinted_monitor.py
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false  # Rellenar manualmente en el dashboard de Render
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: MAX_PRICE
+        value: "23.00"
+      - key: MIN_INTERVAL
+        value: "30"
+      - key: MAX_INTERVAL
+        value: "60"
+      - key: PORT
+        value: "8080"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
