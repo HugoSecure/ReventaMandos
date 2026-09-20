@@ -35,8 +35,22 @@ jobs:
             vinted-seen-
 
       - name: Scan Vinted
+        id: scan
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MAX_PRICE: '23.00'
-        run: python vinted_monitor.py
+        run: python vinted_monitor.py 2>&1 | tee scan_output.txt
+        continue-on-error: true
+
+      - name: Show scan output
+        if: always()
+        run: |
+          echo "=== SCAN OUTPUT ==="
+          cat scan_output.txt 2>/dev/null || echo "No output captured"
+          echo "=== EXIT CODE ==="
+          echo "${{ steps.scan.outcome }}"
+
+      - name: Fail if scan failed
+        if: steps.scan.outcome == 'failure'
+        run: exit 1
