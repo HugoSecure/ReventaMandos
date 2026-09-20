@@ -130,23 +130,28 @@ def save_session(session_data: dict) -> None:
 
 def create_session() -> requests.Session:
     """Crea una sesión HTTP con headers de navegador real."""
-    session = requests.Session()
-    ua = random.choice(USER_AGENTS)
-    session.headers.update({
-        "User-Agent": ua,
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Referer": "https://www.vinted.es",
-        "Origin": "https://www.vinted.es",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-CH-UA": '"Chromium";v="131", "Not_A Brand";v="24"',
-        "Sec-CH-UA-Mobile": "?0",
-        "Sec-CH-UA-Platform": '"Windows"',
-    })
-    return session
+    try:
+        session = requests.Session()
+        ua = random.choice(USER_AGENTS)
+        session.headers.update({
+            "User-Agent": ua,
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Referer": "https://www.vinted.es",
+            "Origin": "https://www.vinted.es",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-CH-UA": '"Chromium";v="131", "Not_A Brand";v="24"',
+            "Sec-CH-UA-Mobile": "?0",
+            "Sec-CH-UA-Platform": '"Windows"',
+        })
+        return session
+    except Exception as e:
+        logger.error("Error creando sesión: %s", e)
+        # Retornar sesión básica como fallback
+        return requests.Session()
 
 
 def init_vinted_session(session: requests.Session) -> bool:
@@ -365,7 +370,11 @@ def run_once() -> None:
 
     # Crear sesión con Vinted
     session = create_session()
-    session_ok = init_vinted_session(session)
+    try:
+        session_ok = init_vinted_session(session)
+    except Exception as e:
+        logger.error("Error al inicializar sesión: %s", e)
+        session_ok = False
     if not session_ok:
         logger.warning("No se pudo inicializar sesión con Vinted. Se reintentará en el próximo escaneo.")
         return  # Salir limpiamente, exit code 0
@@ -419,5 +428,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("⏹️ Interrumpido por el usuario")
     except Exception as e:
-        logger.error("❌ Error fatal: %s", e, exc_info=True)
+        logger.error("❌ Error fatal no capturado: %s", e, exc_info=True)
         sys.exit(1)
