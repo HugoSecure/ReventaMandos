@@ -154,7 +154,6 @@ def init_vinted_session(session: requests.Session) -> bool:
     try:
         logger.info("Inicializando sesión con Vinted...")
         resp = session.get("https://www.vinted.es", timeout=30, allow_redirects=True)
-        logger.info("Respuesta Vinted: HTTP %d, Content-Type: %s", resp.status_code, resp.headers.get("content-type", ""))
         resp.raise_for_status()
 
         # Buscar CSRF token
@@ -221,7 +220,7 @@ def search_vinted(session: requests.Session, query: str) -> list[dict]:
             )
 
         if resp.status_code != 200:
-            logger.error("HTTP %d para '%s': %s", resp.status_code, query, resp.text[:200])
+            logger.warning("HTTP %d para '%s'", resp.status_code, query)
 
         resp.raise_for_status()
         data = resp.json()
@@ -354,17 +353,8 @@ def run_once() -> None:
     logger.info("🚀 VintedMandos Bot — Escaneo único")
     logger.info("=" * 50)
 
-    # Debug: mostrar configuración
-    logger.info("TELEGRAM_BOT_TOKEN configurado: %s", bool(TELEGRAM_BOT_TOKEN))
-    logger.info("TELEGRAM_CHAT_ID configurado: %s", bool(TELEGRAM_CHAT_ID))
-    logger.info("MAX_PRICE: %.2f€", MAX_PRICE)
-
-    if not TELEGRAM_BOT_TOKEN:
-        logger.error("❌ TELEGRAM_BOT_TOKEN está vacío. Verifica el secret en GitHub.")
-        sys.exit(1)
-
-    if not TELEGRAM_CHAT_ID:
-        logger.error("❌ TELEGRAM_CHAT_ID está vacío. Verifica el secret en GitHub.")
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        logger.error("❌ TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID no configurados")
         sys.exit(1)
 
     seen_ids = load_seen()
