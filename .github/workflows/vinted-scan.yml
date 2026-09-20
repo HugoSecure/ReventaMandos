@@ -34,26 +34,9 @@ jobs:
           restore-keys: |
             vinted-seen-
 
-      - name: Test secrets
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python -c "
-          import os
-          token = os.getenv('TELEGRAM_BOT_TOKEN', '')
-          chat = os.getenv('TELEGRAM_CHAT_ID', '')
-          print(f'TOKEN length: {len(token)}')
-          print(f'CHAT_ID length: {len(chat)}')
-          if not token or not chat:
-              print('ERROR: Secrets not set!')
-              raise SystemExit(1)
-          print('Secrets OK')
-          "
-
       - name: Scan Vinted
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MAX_PRICE: '23.00'
-        run: python vinted_monitor.py || (echo "Python failed with exit code $?"; exit 1)
+        run: python vinted_monitor.py
