@@ -1,17 +1,10 @@
-# GitHub Actions workflow: escanea Vinted cada 5 minutos
-# Gratis siempre con repositorio público (minutos ilimitados)
-
 name: VintedMandos Scan
 
 on:
-  # Ejecutar cada 5 minutos con cron
   schedule:
     - cron: '*/5 * * * *'
-
-  # Permitir ejecución manual desde GitHub
   workflow_dispatch:
 
-# Evitar ejecuciones simultáneas
 concurrency:
   group: vinted-scan
   cancel-in-progress: true
@@ -22,21 +15,17 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      # Clonar el repositorio
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Configurar Python
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Instalar dependencias
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Restaurar caché de IDs vistos (persiste entre ejecuciones)
       - name: Restore seen items cache
         uses: actions/cache@v4
         with:
@@ -45,7 +34,12 @@ jobs:
           restore-keys: |
             vinted-seen-
 
-      # Ejecutar el escaneo
+      - name: Debug - Check secrets
+        run: |
+          echo "TELEGRAM_BOT_TOKEN set: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}"
+          echo "TELEGRAM_CHAT_ID set: ${{ secrets.TELEGRAM_CHAT_ID != '' }}"
+          echo "TELEGRAM_CHAT_ID value length: ${{ length(secrets.TELEGRAM_CHAT_ID) }}"
+
       - name: Scan Vinted
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
