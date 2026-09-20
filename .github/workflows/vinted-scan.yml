@@ -34,6 +34,23 @@ jobs:
           restore-keys: |
             vinted-seen-
 
+      - name: Verify secrets
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "TOKEN_SET=$(python -c "import os; print('yes' if os.getenv('TELEGRAM_BOT_TOKEN') else 'no')")"
+          echo "CHAT_SET=$(python -c "import os; print('yes' if os.getenv('TELEGRAM_CHAT_ID') else 'no')")"
+          python -c "
+          import os
+          t = os.getenv('TELEGRAM_BOT_TOKEN','')
+          c = os.getenv('TELEGRAM_CHAT_ID','')
+          if not t or not c:
+              print(f'ERROR: Token={len(t)} chars, ChatID={len(c)} chars. Configure secrets in Settings > Secrets!')
+              raise SystemExit(1)
+          print(f'OK: Token={len(t)} chars, ChatID={len(c)} chars')
+          "
+
       - name: Scan Vinted
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
