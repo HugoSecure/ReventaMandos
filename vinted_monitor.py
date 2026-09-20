@@ -407,8 +407,13 @@ def run_once() -> None:
 if __name__ == "__main__":
     try:
         run_once()
-    except SystemExit:
-        raise  # Permitir sys.exit()
+        logger.info("✅ Escaneo finalizado correctamente")
+    except SystemExit as e:
+        if e.code != 0:
+            logger.error("❌ Script terminó con código de error: %s", e.code)
+        raise
+    except KeyboardInterrupt:
+        logger.info("⏹️ Interrumpido por el usuario")
     except Exception as e:
-        logger.error("Error fatal: %s", e, exc_info=True)
+        logger.error("❌ Error fatal: %s", e, exc_info=True)
         sys.exit(1)
