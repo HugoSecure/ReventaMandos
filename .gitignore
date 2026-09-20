@@ -1,27 +1,13 @@
-# Archivos de entorno (contienen tokens secretos)
-.env
-
-# Base de datos de IDs vistos (se genera automáticamente)
-seen_items.json
-
-# Logs
-*.log
+# Datos persistentes (se manejan con cache de GitHub Actions)
+data/
 
 # Entorno virtual
 venv/
 .venv/
-env/
 
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-*.egg-info/
-dist/
-build/
-
-# Docker
-docker-compose.override.yml
 
 # Sistema operativo
 .DS_Store
