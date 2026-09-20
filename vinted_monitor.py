@@ -154,6 +154,7 @@ def init_vinted_session(session: requests.Session) -> bool:
     try:
         logger.info("Inicializando sesión con Vinted...")
         resp = session.get("https://www.vinted.es", timeout=30, allow_redirects=True)
+        logger.info("Respuesta Vinted: HTTP %d, Content-Type: %s", resp.status_code, resp.headers.get("content-type", ""))
         resp.raise_for_status()
 
         # Buscar CSRF token
@@ -219,13 +220,20 @@ def search_vinted(session: requests.Session, query: str) -> list[dict]:
                 timeout=30,
             )
 
+        if resp.status_code != 200:
+            logger.error("HTTP %d para '%s': %s", resp.status_code, query, resp.text[:200])
+
         resp.raise_for_status()
-        items = resp.json().get("items", [])
+        data = resp.json()
+        items = data.get("items", [])
         logger.info("'%s': %d items", query, len(items))
         return items
 
-    except (requests.RequestException, json.JSONDecodeError) as e:
+    except requests.RequestException as e:
         logger.error("Error búsqueda '%s': %s", query, e)
+        return []
+    except json.JSONDecodeError as e:
+        logger.error("Error JSON búsqueda '%s': %s", query, e)
         return []
 
 
@@ -402,6 +410,8 @@ def run_once() -> None:
 if __name__ == "__main__":
     try:
         run_once()
+    except SystemExit:
+        raise  # Permitir sys.exit()
     except Exception as e:
-        logger.error("Error fatal: %s", e)
+        logger.error("Error fatal: %s", e, exc_info=True)
         sys.exit(1)
