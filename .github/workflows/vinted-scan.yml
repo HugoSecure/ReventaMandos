@@ -34,12 +34,6 @@ jobs:
           restore-keys: |
             vinted-seen-
 
-      - name: Debug - Check secrets
-        run: |
-          echo "TELEGRAM_BOT_TOKEN set: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}"
-          echo "TELEGRAM_CHAT_ID set: ${{ secrets.TELEGRAM_CHAT_ID != '' }}"
-          echo "TELEGRAM_CHAT_ID value length: ${{ length(secrets.TELEGRAM_CHAT_ID) }}"
-
       - name: Scan Vinted
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
